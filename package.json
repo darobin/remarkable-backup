@@ -1,0 +1,35 @@
+{
+  "name": "remarkable-backup",
+  "version": "0.0.1",
+  "description": "Tool to back up the content of your reMarkable (unofficial)",
+  "author": "Robin Berjon <robin@berjon.com>",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {},
+  "bin": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/darobin/remarkable-backup.git"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "mocha": true,
+      "es2021": true
+    },
+    "extends": "eslint:recommended",
+    "overrides": [],
+    "parserOptions": {
+      "ecmaVersion": "latest",
+      "sourceType": "module"
+    },
+    "rules": {}
+  },
+  "devDependencies": {
+    "eslint": "^8.26.0"
+  },
+  "dependencies": {
+    "commander": "^9.5.0",
+    "remarkable-typescript": "^1.1.3"
+  }
+}
