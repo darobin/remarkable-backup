@@ -3,11 +3,15 @@
 import { program } from 'commander';
 import { isAbsolute, join } from 'path';
 import process from 'process';
-import { Remarkable } from 'remarkable-typescript';
+import axios from 'axios';
+import { v4 as uuid } from 'uuid';
+// import { Remarkable } from 'remarkable-typescript';
 import loadJSON from './lib/load-json.js';
 import saveJSON from './lib/save-json.js';
 // import die from './lib/die.js';
 
+// const baseURL = 'https://my.remarkable.com';
+// const baseURL = 'http://localhost:8765';
 const { version } = await loadJSON('./package.json');
 
 // let { program } = require('commander')
@@ -24,16 +28,51 @@ program
   .requiredOption('-t, --tokens <path>', 'file in which the tokens are stored')
 ;
 
+
+// POST /token/json/2/device/new (http://localhost)
+// {
+//   "host": "localhost:8765",
+//   "user-agent": "rmapi",
+//   "content-length": "98",
+//   "authorization": "Bearer",
+//   "accept-encoding": "gzip"
+// }
+
+// {"code":"ieovobzc","deviceDesc":"desktop-linux","deviceID":"ed0e041b-a2d5-4b02-b3ac-405c19f3bef6"}
+
 // register
-// The first time you connect this, you need to go to https://my.remarkable.com/connect/remarkable and obtain a code.
+// The first time you connect this, you need to go to https://my.remarkable.com/device/desktop/connect and obtain a code.
 // Pass this to `remarkable-backup register` to generate a device token that gets stored in the file specificed by
 // `--tokens`.
 program
   .command('register <code>')
-  .description('The first time you connect, you need to go to https://my.remarkable.com/connect/remarkable and obtain a code.')
+  .description('The first time you connect, you need to go to https://my.remarkable.com/device/desktop/connect and obtain a code.')
   .action(async (code) => {
     const client = await createClient();
-    const deviceToken = await client.register({ code });
+    console.log(`code`, code);
+    const res = await client.post(
+      // '/token/json/2/device/new',
+      'https://my.remarkable.com/token/json/2/device/new',
+      {
+        code,
+        deviceDesc: 'desktop-windows',
+        deviceID: uuid(),
+      },
+      {
+        responseType: 'text',
+        headers: {
+          'User-Agent': 'rmapi',
+          'Authorization': 'Bearer',
+          'Accept-Encoding': 'gzip',
+          Accept: null,
+          'Content-Type': null,
+        },
+      }
+    );
+    console.log(res.status, res.headers, res.data);
+    const deviceToken = res.data;
+    // const deviceToken = await client.register({ code });
+    console.log(`device token`, deviceToken);
     await saveTokens({ deviceToken });
     console.log(`Registered device token ${deviceToken} successfully.`);
   })
@@ -41,12 +80,17 @@ program
 
 async function createClient () {
   const { deviceToken } = await loadTokens();
+  // const client = axios.create({ baseURL });
   if (deviceToken) {
-    const client = new Remarkable({ deviceToken });
-    await client.refreshToken();
-    return client;
+    // XXX
+    // need to do whatever dance to refresh the token after this use
+    // const client = new Remarkable({ deviceToken });
+    // await client.refreshToken();
+    // return client;
   }
-  return new Remarkable();
+  return axios;
+  // return client;
+  // return new Remarkable();
 }
 
 function tokensPath () {
